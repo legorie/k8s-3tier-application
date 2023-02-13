@@ -5,6 +5,35 @@ The repository contains a step by step evolution of a three tier application fro
 
 Folder **Step_2**:
 
+In this second step, we will dockerize the application.
+
+*Web :* 
+
+The Dockerfile in the web folder performs a multi stage build. A key learning in this docker build process is to understand the folder structure (local vs docker build image vs final docker image) and the execution of the ENTRYPONT.
+
+> docker build -t local/web .
+> docker run -d -p 8080:8080 local/web
+
+This should have the web container running and the web app accessible from the browser of the dev machine.
+
+*API :*
+
+The Dockerfile in the API folder also follows the multistage build. While running the *docker run* command,we use the network option as host, so that the API container can reach the DB container running on the local DEV machine.
+
+> docker build -t local/api .
+> docker run -d  --network=host local/api
+
+The webapp is fully function on the local DEV machine and here is an example output of the __docker ps__ command
+
+```
+CONTAINER ID   IMAGE       COMMAND                  CREATED          STATUS          PORTS                                       NAMES
+202f87a7f5b4   local/api   "./api"                  57 seconds ago   Up 56 seconds                                               hungry_meninsky
+0eafae7b54b1   local/web   "./web"                  16 minutes ago   Up 16 minutes   0.0.0.0:8080->8080/tcp, :::8080->8080/tcp   friendly_allen
+1bbaf0cc3891   postgres    "docker-entrypoint.s…"   2 weeks ago      Up 2 weeks      0.0.0.0:5455->5432/tcp, :::5455->5432/tcp   myPostgresDb
+taku
+```
+
+
 
 
 Folder **Step_1**:
@@ -48,3 +77,5 @@ API server in port 8090
 `
 
 Thanks to : Soham Kamani (https://medium.com/gojekengineering/adding-a-database-to-a-go-web-application-b0e8e8b16fb9)
+
+https://www.weave.works/blog/deploying-an-application-on-kubernetes-from-a-to-z
