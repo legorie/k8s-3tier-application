@@ -2,6 +2,15 @@
 
 The repository contains a step by step evolution of a three tier application from local development to K8S deployment.
 
+Folder **Step_4**:
+
+In this step 4, we'll deploy our application using a declarative YAML. In the `deployment/3tierapp.yaml` file, we have :
+1) The PostGreSQL deployment, the DB password saved as a secret and a service
+2) The API deployment
+3) The web deployment
+
+To test the application on your DEV machine, you'll have to forward the ports 8080 & 8090 as we have seen previously.
+
 
 Folder **Step_3**:
 
@@ -101,7 +110,7 @@ birds_db=#
  
 2) Next, let us create the API POD.
 
-> k run api --image=localhost:5000/api --env="DB_HOST=10.105.45.86" --env="DB_USER=postgresUser" --env="API_PASSWORD=postgresPW" 
+> k run api --image=localhost:5000/api --env="DB_HOST=10.105.45.86" --env="DB_USER=postgresUser" --env="DB_PASSWORD=postgresPW" 
 For the DB_HOST IP address, use the IP address of the postgres service IP.
 
 Some sample error messages (1) Network not set up correctly (2) DB not setup correctly
