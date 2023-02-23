@@ -9,11 +9,13 @@ import (
 )
 
 var apiHost = os.Getenv("API_HOST")
+var apiPort = os.Getenv("API_PORT")
 
 func index(w http.ResponseWriter, r *http.Request) {
 	tpl, _ := template.ParseFiles("./assets/index.html")
 	data := map[string]string{
 		"API_HOST": apiHost,
+		"API_PORT": apiPort,
 	}
 	w.WriteHeader(http.StatusOK)
 	tpl.Execute(w, data)

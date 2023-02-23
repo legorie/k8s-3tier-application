@@ -2,6 +2,54 @@
 
 The repository contains a step by step evolution of a three tier application from local development to K8S deployment.
 
+Folder **Step_5**:
+
+In this step 5, we try to use an Ingress Controller to route the traffic to the web and api applications.
+The web app had to modified for the way the new ingress is being setup (to the call the API), so we will have to re-build and push the web application (to the local registry) with new source code in the Step_5 folder.
+
+> $ docker build Step_5/web/. -t local/web
+> $ docker tag local/web localhost:5000/web
+> $ docker push localhost:5000/web
+
+We can also recreate the application deployments & services as needed :
+> $ kubectl apply -f deployment/3tierapp.yaml
+
+As we are using minikube, on of the easier ways is deploy the ingress controller via minikube :
+
+> $ minikube addons enable ingress
+
+An alternative would be to deploy via the manifest of the nginx controller :
+> $ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.4.0/deploy/static/provider/cloud/deploy.yaml
+
+> $ kubectl get all -n ingress-nginx
+
+Now, let us create the ingress for our application. Our new ingress points to the web application via the _web-svc_ service and to the api via the _api-svc_
+N.B. Do learn about the annotations - rewrite-path and the path regex
+
+> $ k apply -f deployment/ingress.yaml
+> ingress.networking.k8s.io/frontend-ingress created
+
+We can get the IP address of the ingress using the below kubectl command :
+
+> $ kubectl get ing
+NAME               CLASS   HOSTS         ADDRESS        PORTS   AGE
+frontend-ingress   nginx   k8sapp.info   192.168.49.2   80      8m1s
+
+Also, in the /etc/hosts file, let us add a mapping for the URL in our ingress to the IP address assigned to the ingress.
+
+> $ cat /etc/hosts
+127.0.0.1	localhost
+192.168.49.2    k8sapp.info
+
+Now, the web app is functional from the browser on the VM via the URL http://k8sapp.info/web
+
+Folder **Step_5**:
+
+$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx
+/nginx-3.0.2/deploy/static/mandatory.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx
+/nginx-3.0.2/deploy/static/provider/cloud-generic.yaml
+
 Folder **Step_4**:
 
 In this step 4, we'll deploy our application using a declarative YAML. In the `deployment/3tierapp.yaml` file, we have :
@@ -9,8 +57,9 @@ In this step 4, we'll deploy our application using a declarative YAML. In the `d
 2) The API deployment
 3) The web deployment
 
-To test the application on your DEV machine, you'll have to forward the ports 8080 & 8090 as we have seen previously.
+`$ kubectl apply -f deployment/3tierapp.yaml`
 
+To test the application on your DEV machine, you'll still have to forward the ports 8080 & 8090 as we have seen previously.
 
 Folder **Step_3**:
 

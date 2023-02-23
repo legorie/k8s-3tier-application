@@ -30,7 +30,7 @@
     This section contains the form, that will be used to hit the 
     `POST /bird` API that we will build in the next section
    -->
-  <form action="http://{{.API_HOST}}:8090/bird" method="post" id="formBirdCreate">
+  <form action="http://{{.API_HOST}}:{{.API_PORT}}/api/bird" method="post" id="formBirdCreate">
     Species:
     <input type="text" name="species">
     <br/> Description:
@@ -56,7 +56,7 @@
       {"species":"...","description":"..."}
     ]
     */
-    fetch("http://{{.API_HOST}}:8090/bird")
+    fetch("http://{{.API_HOST}}:{{.API_PORT}}/api/bird")
       .then(response => response.json())
       .then(birdList => {
         //Once we fetch the list, we iterate over it
@@ -83,7 +83,7 @@
         var xhr = new XMLHttpRequest();
         var formData = new FormData(form);
         //open the request
-        xhr.open('POST','http://localhost:8090/bird')
+        xhr.open('POST','http://{{.API_HOST}}:{{.API_PORT}}/api/bird')
         xhr.setRequestHeader("Content-Type", "application/json");
 
         xhr.onreadystatechange = function() {
