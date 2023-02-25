@@ -1,0 +1,45 @@
+apiDeployment:
+  api:
+    env:
+      dbHost: my3tierapp-postgres-service.default.svc
+      dbUser: postgresUser
+    image:
+      repository: localhost
+      tag: 5000/api
+  replicas: 1
+apiSvc:
+  ports:
+  - port: 8090
+    targetPort: 8090
+  type: NodePort
+webSvc:
+  ports:
+  - port: 8080
+    targetPort: 8080
+  type: NodePort
+kubernetesClusterDomain: cluster.local
+postgres:
+  postgres:
+    env:
+      postgresDb: birds_db
+      postgresUser: postgresUser
+    image:
+      repository: postgres
+      tag: "15.2"
+  replicas: 1
+postgresPw:
+  postgresPassword: "postgresPW"
+postgresService:
+  ports:
+  - port: 5455
+    targetPort: 5432
+  type: ClusterIP
+webDeployment:
+  replicas: 1
+  web:
+    env:
+      apiHost: k8sapp.info
+      apiPort: "80"
+    image:
+      repository: localhost
+      tag: 5000/web

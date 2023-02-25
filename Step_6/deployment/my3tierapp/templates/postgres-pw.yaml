@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "my3tierapp.fullname" . }}-postgres-pw
+  labels:
+  {{- include "my3tierapp.labels" . | nindent 4 }}
+data:
+  POSTGRES_PASSWORD: {{ required "postgresPw.postgresPassword is required" .Values.postgresPw.postgresPassword
+    | b64enc | quote }}
+type: Opaque

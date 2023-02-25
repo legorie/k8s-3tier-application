@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "my3tierapp.fullname" . }}-postgres
+  labels:
+  {{- include "my3tierapp.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.postgres.replicas }}
+  selector:
+    matchLabels:
+      service: postgres
+    {{- include "my3tierapp.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        service: postgres
+      {{- include "my3tierapp.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: POSTGRES_DB
+          value: {{ .Values.postgres.postgres.env.postgresDb }}
+        - name: POSTGRES_USER
+          value: {{ .Values.postgres.postgres.env.postgresUser }}
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: POSTGRES_PASSWORD
+              name: {{ include "my3tierapp.fullname" . }}-postgres-pw
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ .Values.kubernetesClusterDomain }}
+        image: {{ .Values.postgres.postgres.image.repository }}:{{ .Values.postgres.postgres.image.tag
+          | default .Chart.AppVersion }}
+        name: postgres
+        ports:
+        - containerPort: 5432
+        resources: {}
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: app-pgdata
+      volumes:
+      - hostPath:
+          path: /home/docker/pgdata
+        name: app-pgdata
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "my3tierapp.fullname" . }}-api-deployment
+  labels:
+    app: api
+  {{- include "my3tierapp.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.apiDeployment.replicas }}
+  selector:
+    matchLabels:
+      app: api
+    {{- include "my3tierapp.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: api
+      {{- include "my3tierapp.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: DB_HOST
+          value: {{ .Values.apiDeployment.api.env.dbHost }}
+        - name: DB_USER
+          value: {{ .Values.apiDeployment.api.env.dbUser }}
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: POSTGRES_PASSWORD
+              name: {{ include "my3tierapp.fullname" . }}-postgres-pw
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ .Values.kubernetesClusterDomain }}
+        image: {{ .Values.apiDeployment.api.image.repository }}:{{ .Values.apiDeployment.api.image.tag
+          | default .Chart.AppVersion }}
+        name: api
+        ports:
+        - containerPort: 8090
+        resources: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "my3tierapp.fullname" . }}-web-deployment
+  labels:
+    app: web
+  {{- include "my3tierapp.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.webDeployment.replicas }}
+  selector:
+    matchLabels:
+      app: web
+    {{- include "my3tierapp.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: web
+      {{- include "my3tierapp.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: API_HOST
+          value: {{ .Values.webDeployment.web.env.apiHost }}
+        - name: API_PORT
+          value: {{ .Values.webDeployment.web.env.apiPort | quote }}
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ .Values.kubernetesClusterDomain }}
+        image: {{ .Values.webDeployment.web.image.repository }}:{{ .Values.webDeployment.web.image.tag
+          | default .Chart.AppVersion }}
+        name: web
+        ports:
+        - containerPort: 8080
+        resources: {}

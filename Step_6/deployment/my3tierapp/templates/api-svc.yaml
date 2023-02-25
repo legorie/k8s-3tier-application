@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "my3tierapp.fullname" . }}-api-svc
+  labels:
+  {{- include "my3tierapp.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.apiSvc.type }}
+  selector:
+    app: api
+  {{- include "my3tierapp.selectorLabels" . | nindent 4 }}
+  ports:
+	{{- .Values.apiSvc.ports | toYaml | nindent 2 -}}

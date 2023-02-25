@@ -2,10 +2,61 @@
 
 The repository contains a step by step evolution of a three tier application from local development to K8S deployment.
 
+Folder **Step_6**:
+
+In this final Step 6, we'll try to convert the deployment YAML into a Helm chart. To crate a new helm chart, we use :
+
+> $ helm create my3tierapp_temp
+
+Now, in the new Helm folder created, we'll have to move the deployment code to the _template/deployment.yaml_ , services to _template/service.yaml_ and any variables to be parametarized in the _values.yaml_
+
+There is also a tool called helmify[https://github.com/arttor/helmify] which helped in converting the Kubernetes YAML files (created in the previous step) to a Helm chart.
+
+> $ cat deployment/3tierapp.yaml ingress.ymal | *helmify* my3tierapp
+
+This creates a new helm chart called my3tierapp. Try to install the helm chart, you'll surely face some issues, try to fix them, it gives us a great learning opportunity. For reference, the working helm chart code is present in the Step_6 folder
+
+`$ helm install my3tierapp my3tierapp/
+NAME: my3tierapp
+LAST DEPLOYED: Sat Feb 25 19:29:59 2023
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+$ helm list
+NAME      	NAMESPACE	REVISION	UPDATED                                STATUS  	CHART           	APP VERSION
+my3tierapp	default  	1       	2023-02-25 19:29:59.214309728 +0100 CETdeployed	my3tierapp-0.1.0	0.1.0
+`
+This created the Kubernetes objects for our application :
+
+`
+$ k get ing
+NAME                          CLASS   HOSTS         ADDRESS        PORTS   AGE
+my3tierapp-frontend-ingress   nginx   k8sapp.info   192.168.49.2   80      4m46s
+$ k get deploy
+NAME                        READY   UP-TO-DATE   AVAILABLE   AGE
+my3tierapp-api-deployment   1/1     1            1           4m53s
+my3tierapp-postgres         1/1     1            1           4m53s
+my3tierapp-web-deployment   1/1     1            1           4m53s
+$ k get pods
+k gNAME                                         READY   STATUS    RESTARTS        AGE
+my3tierapp-api-deployment-86bfc7684-kcdsp    1/1     Running   1 (4m57s ago)   5m5s
+my3tierapp-postgres-58fbdc79fc-c8w9g         1/1     Running   0               5m5s
+my3tierapp-web-deployment-6f69c9f678-526t2   1/1     Running   0               5m5s
+$ k get svc
+NAME                          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+kubernetes                    ClusterIP   10.96.0.1       <none>        443/TCP          111d
+my3tierapp-api-svc            NodePort    10.103.247.31   <none>        8090:32393/TCP   5m8s
+my3tierapp-postgres-service   ClusterIP   10.99.125.144   <none>        5455/TCP         5m8s
+my3tierapp-web-svc            NodePort    10.111.54.43    <none>        8080:32362/TCP   5m8s
+`
+
+The webapp and APIs are functional and can be tested on the local VM as we did previously.
+
 Folder **Step_5**:
 
 In this step 5, we try to use an Ingress Controller to route the traffic to the web and api applications.
-The web app had to modified for the way the new ingress is being setup (to the call the API), so we will have to re-build and push the web application (to the local registry) with new source code in the Step_5 folder.
+The web app had to modified for the way the new ingress is being setup (to thea call the API), so we will have to re-build and push the web application (to the local registry) with new source code in the Step_5 folder.
 
 > $ docker build Step_5/web/. -t local/web
 > $ docker tag local/web localhost:5000/web
