@@ -60,8 +60,8 @@ In this second step, we will dockerize the application.
 
 The Dockerfile in the web folder performs a multi stage build. A key learning in this docker build process is to understand the folder structure (local vs docker build image vs final docker image) and the execution of the ENTRYPONT.
 
-> docker build -t local/web .
-> docker run -d -p 8080:8080 local/web
+> $ docker build -t local/web .  
+> $ docker run -d -p 8080:8080 local/web  
 
 This should have the web container running and the web app accessible from the browser of the dev machine(VM).
 
@@ -69,8 +69,8 @@ This should have the web container running and the web app accessible from the b
 
 The Dockerfile in the API folder also follows the multistage build. While running the *docker run* command,we use the network option as host, so that the API container can reach the DB container running on the local DEV machine.
 
-> docker build -t local/api .
-> docker run -d  --network=host local/api
+> $ docker build -t local/api .  
+> $ docker run -d  --network=host local/api  
 
 The webapp is fully function on the local DEV machine and here is an example output of the __docker ps__ command
 
@@ -337,6 +337,33 @@ my3tierapp-web-svc            NodePort    10.111.54.43    <none>        8080:323
 ```
 
 The webapp and APIs are functional and can be tested on the local VM as we did previously.
+
+## Folder **Step_7**:
+
+In this Step_7 let us add some metrics to our simple application and monitor it using Prometheus. As a first step, to facilitate our testing process, it would be easy to convert our devlopment environment using `docker compose`.
+
+## Run using docker compose
+First, we'll convert our earlier `docker run` commands into the docker compose file. Compare the `docker run` commands used in Step_3 and the docker compose YAML will give you an one-to-one mapping of the fields.
+
+Two issues were encountered  :
+a) The port mapping on the PostgreSQL container did not work as expected. As our port on the API application is hardcoded to 5455. While using the default port mapping config of docker compose, the local container still exposed the service on the default PostgreSQL port 5432 instead of the mapped (expected) 5455.  
+To hack this situation , we are running the postgres database on the port 5455 - unlike what we did before.
+
+```
+### extract from the docker compose YAML
+command: -p 5455
+```
+b) Also, while doing the `docker compose up` for the first time, the API server will complain that the birds_db is not present. As we are mapping a local folder `./pgdata:/var/lib/postgresql/data` to the DB, we would login to the database using psql and create the *birds_db* database manually & the *birds* table.
+
+
+```
+$ psql -h <IP address of the postgres container> -U postgresUser -d postgres -p 5455
+
+## To find the IP address of the postgres container
+docker inspect <id of the postgres container> | grep IPAddress
+```
+
+## Prometheus
 
 
 Thanks to : 

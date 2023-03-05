@@ -1,0 +1,35 @@
+version: "3.9"
+services:
+  myPostgresDb:
+    image: postgres:10.5
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    # ports:
+    #   - "5455:5432" # The port mapping is not working, making the DB run on port 5455 using command argument
+    environment:
+      POSTGRES_USER: postgresUser
+      POSTGRES_PASSWORD: postgresPW
+      POSTGRES_DB: postgresDB
+    command: -p 5455
+  web:
+    image: local/web
+    build: web
+    ports:
+      - "8080:8080"
+    environment:
+      API_HOST: api
+      API_PORT: 8090
+    depends_on:
+      - api
+  api:
+    image: local/api
+    build: api
+    ports:
+      - "8090:8090"
+    environment:
+      DB_HOST: myPostgresDb # Connecting the DB container via localhost and not via the service
+      DB_USER: postgresUser
+      DB_PASSWORD: postgresPW
+      # network_mode: "host" # The DB container is exposed on 5455 on the host machine
+    depends_on:
+      - myPostgresDb
